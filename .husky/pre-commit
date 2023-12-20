@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+./vendor/bin/phpstan analyse
+# shellcheck disable=SC2181
+if [ $? -ne 0 ]; then
+    echo "Corrija os erros do PHPStan antes de continuar."
+    exit 1
+fi
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep ".php\{0,1\}$") || true
+for FILE in $STAGED_FILES
+do
+    ./vendor/bin/pint "${FILE}" > /dev/null >&1
+    git add "${FILE}"
+done;

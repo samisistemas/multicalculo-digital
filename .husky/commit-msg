@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+NON_COLOR="\033[0m"
+BLUE_COLOR="\033[1;34m"
+RED_COLOR="\033[1;31m"
+
+REGEX_ISSUE_ID="[a-zA-Z0-9,\.\_\-]+-[0-9]+"
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+ISSUE_ID=$(echo "$BRANCH_NAME" | grep -oE "$REGEX_ISSUE_ID")
+COMMIT_MESSAGE=$(cat "$1")
+
+if [ -z "$ISSUE_ID" ]; then
+    echo "${RED_COLOR}O nome da branch não contém o ID da issue. Ex.: ${BLUE_COLOR}feature/MD-1-nome-da-issue${NON_COLOR}"
+    exit 1
+fi
+
+if [ -z "$COMMIT_MESSAGE" ]; then
+    echo "${RED_COLOR}O commit não contém nenhuma mensagem."
+    exit 1
+fi
+
+if [ "${COMMIT_MESSAGE: -1}" != "." ]; then
+    echo "${RED_COLOR}O commit não termina com um ponto final."
+    exit 1
+fi
+
+echo "$ISSUE_ID: $COMMIT_MESSAGE" > "$1"
